@@ -16,6 +16,7 @@ double occlid_distance(double x1[], double x2[], int d);
 void write_in_file(char output[], double** centroids, int k, int d);
 void free_double_matrix(double** matrix, int last_index);
 int discover_len(char input[]);
+void delete_all_files();
 
 
 static PyObject* fit(PyObject* Py_UNUSED(self), PyObject* args) {
@@ -72,13 +73,15 @@ void kmeans(int k, int max_iter, double e) {
     if(vectors == NULL) {
         printf("An Error Has Occurred");
         free(vectors);
+        delete_all_files();
         exit(1);
-    }
+        }
     for (i = 0; i < n; i++) {
         vectors[i] = malloc(d*sizeof(double));
         if(vectors[i] == NULL) { /* check if there's enough memory for vectors */
             printf("An Error Has Occurred");
             free_double_matrix(vectors, i);  /* frees all lines from 0 to i, including prime matrix */
+            delete_all_files();
             exit(1);
         }
     }
@@ -89,6 +92,7 @@ void kmeans(int k, int max_iter, double e) {
         printf("An Error Has Occurred");
         free_double_matrix(vectors, n-1);
         free_double_matrix(centroids, -1);
+        delete_all_files();
         exit(1);
     }
     for (i = 0; i < k; i++){
@@ -97,6 +101,7 @@ void kmeans(int k, int max_iter, double e) {
             printf("An Error Has Occurred");
             free_double_matrix(vectors, n-1);
             free_double_matrix(centroids, i);
+            delete_all_files();
             exit(1);
         }
     }
@@ -111,6 +116,7 @@ void kmeans(int k, int max_iter, double e) {
         free(cluster_of_vector);
         free(norms);
         free(new_centroid);
+        delete_all_files();
         exit(1);
     }
 
@@ -162,12 +168,14 @@ void discover_n_d(char input[], int n_d[2], int line_len) {
     if(line == NULL) { /* check if there's enough memory for line */
         printf("An Error Has Occurred");
         free(line);
+        delete_all_files();
         exit(1);
     }
     inputFile = fopen(input, "r");
     if (inputFile == NULL) {
         printf("An Error Has Occurred");
         free(line);
+        delete_all_files();
         exit(1);
     }
     while (fgets(line, line_len + 100, inputFile)) {  /* searching for n and d */
@@ -197,6 +205,7 @@ void fill_mat(char input[], double** vectors, int n, int line_len) {
     if(line == NULL) { /* check if there's enough memory for line */
         printf("An Error Has Occurred");
         free_double_matrix(vectors, n-1);
+        delete_all_files();
         exit(1);
     }
     inputFile = fopen(input, "r");
@@ -204,6 +213,7 @@ void fill_mat(char input[], double** vectors, int n, int line_len) {
         printf("An Error Has Occurred");
         free_double_matrix(vectors, n-1);
         free(line);
+        delete_all_files();
         exit(1);
     }
     while (fgets(line, line_len + 100, inputFile)) {
@@ -280,6 +290,7 @@ void write_in_file(char output[], double** centroids, int k, int d) {
     if (output_file == NULL) {
         printf("An Error Has Occurred");
         free_double_matrix(centroids, k-1);
+        delete_all_files();
         exit(1);
     }
     for (i = 0; i < k; i++) {
@@ -314,6 +325,7 @@ int discover_len(char input[]) {
     input_file = fopen(input, "r");
     if (input_file == NULL) {
         printf("An Error Has Occurred");
+        delete_all_files();
         exit(1);
     }
     while (c != EOF) {
@@ -331,4 +343,12 @@ int discover_len(char input[]) {
     }
     fclose(input_file);
     return max_length;
+}
+
+
+void delete_all_files() {
+    remove("vectors_tmp_file.txt");
+    remove("centroids_tmp_file.txt");
+    remove("results_tmp_file.txt");
+    return;
 }

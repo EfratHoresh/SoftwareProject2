@@ -21,30 +21,30 @@ def prepare_data(k, file_name_1, file_name_2):
     vectors.to_csv('vectors_tmp_file.txt', header=False, index=False)  # create a new file of all vectors
     index_lst = vectors.index.values.tolist()
     vectors = vectors.to_numpy()
-    # choose random centroid
-    np.random.seed(0)
+    np.random.seed(0)  # choose random centroid
     n = len(vectors)
-    if k >= n or k < 2:
+    if k >= n or k < 2:  # check if k is legal
         print("Invalid Input!")
+        os.remove('vectors_tmp_file.txt')
         quit()
     random_index = np.random.choice(n)
     i = 1
-    centroids = [vectors[random_index]]
-    centroids_index = [index_lst[random_index]]
+    centroids = [vectors[random_index]]  # create centroids list
+    centroids_index = [index_lst[random_index]]  # create index list
     while i < k:
         d = np.array([0.0 for j in range(n)])
-        for l in range(n):
+        for l in range(n):  # find centroid with minimal distance
             min_distance = np.linalg.norm(vectors[l]-centroids[0])
             for centroid in centroids:
                 distance = np.linalg.norm(vectors[l]-centroid)
                 min_distance = min(distance, min_distance)
-            d[l] = min_distance**2
+            d[l] = min_distance**2  # update min distance in d
         d_sum = d.sum()
-        p = np.array([d[j]/d_sum for j in range(n)])
+        p = np.array([d[j]/d_sum for j in range(n)])  # calculate probabilities
         i += 1
-        index = np.random.choice(n, p=p)
-        centroids_index.append(index_lst[index])
-        centroids.append(vectors[index])
+        index = np.random.choice(n, p=p)  # choose random index with p probabilities
+        centroids_index.append(index_lst[index])  # update index list
+        centroids.append(vectors[index])  # update centroids list
         np.savetxt('centroids_tmp_file.txt', centroids, fmt='%.4f', delimiter=',')  # create new file for centroids
     return centroids_index
 
@@ -64,6 +64,13 @@ def is_max_iter_legal(max_iter):
     return max_iter.isnumeric() and int(max_iter)>0
 
 
+def delete_files():
+    os.remove('vectors_tmp_file.txt')
+    os.remove('centroids_tmp_file.txt')
+    os.remove('results_tmp_file.txt')
+    return
+
+
 args = sys.argv[1:]
 if len(args) == 5:  # max_iteration given
     if not args[0].isnumeric() or not is_max_iter_legal(args[1]) or not is_e_legal(args[2]):  # k, max_iteration or eps not int
@@ -81,18 +88,17 @@ else:  # wrong number of args
     print("Invalid Input!")
     quit()
 index_str = ','.join([str(num) for num in index_lst])  # add indexes to file
-try:
+try:  # try to read results
     f = open('results_tmp_file.txt', 'r+')
     content = f.read()
     f.close()
 except Exception:
     print("An Error Has Occurred")
+    delete_files()
     quit()
 # f.seek(0, 0)
 # f.write(index_str+'\n'+content)
 # f.seek(0, 0)  # print file
 # content = f.read()
-os.remove('vectors_tmp_file.txt')
-os.remove('centroids_tmp_file.txt')
-os.remove('results_tmp_file.txt')
+delete_files()
 print(index_str+'\n'+content)
